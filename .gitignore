@@ -8,6 +8,7 @@ __pycache__/
 corpus/open/
 corpus/manifest.generated.json
 dataset/dev-open/
+results/
 
 # User-provided proprietary assets must never be committed.
 corpus/private/

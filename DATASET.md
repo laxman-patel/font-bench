@@ -37,6 +37,8 @@ bun run dataset:private
 bun run dataset:all
 bun run inference:prepare
 bun run inference:prepare:private
+bun run e2b:eval -- --dataset private-mixed --limit 5
+bun run score -- --dataset private-mixed --predictions results/e2b/<run>/predictions.jsonl
 ```
 
 The renderer is TypeScript/Bun. It uses `fontkit` to read glyph outlines directly from the downloaded font files and `sharp` to emit stripped PNGs.
@@ -71,3 +73,38 @@ The sanitized workspace contains only:
 - `workspace_metadata.json`
 
 It explicitly excludes answer keys, corpus manifests, source fonts, private font files, and repo files. The scorer should keep reading `dataset/private-mixed/answer_key.json` from the controller workspace only.
+
+## E2B Evaluation
+
+The E2B controller keeps scoring local:
+
+```text
+local controller
+  prepare sanitized workspace
+  upload only items.json + images/*.png + sandbox inference script
+  run inference in E2B
+  download predictions.jsonl
+  compare against local answer_key.json
+```
+
+Required environment:
+
+```bash
+export E2B_API_KEY="e2b_..."
+export CURSOR_API_KEY="cursor_..."
+```
+
+Run a small smoke eval first:
+
+```bash
+bun run e2b:eval -- --dataset private-mixed --limit 5
+```
+
+The controller writes local artifacts under `results/e2b/<run>/`:
+
+- `predictions.jsonl` — model outputs downloaded from E2B.
+- `score.json` — local scoring against `dataset/<name>/answer_key.json`.
+- `sandbox.stdout.log` / `sandbox.stderr.log` — E2B command logs.
+- `run_metadata.json` — run config.
+
+The E2B sandbox never receives `answer_key.json`, `corpus/`, manifests, or source fonts.
