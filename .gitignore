@@ -19,3 +19,7 @@ dataset/private-mixed/
 
 # Local web research scratch files.
 .firecrawl/
+
+# Astro site build artifacts.
+site/dist/
+site/.astro/

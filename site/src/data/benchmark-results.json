@@ -1,0 +1,171 @@
+{
+  "benchmark": "fontbench",
+  "version": "v1",
+  "generatedAt": "2026-06-28T15:35:09.538Z",
+  "dataset": {
+    "name": "private-mixed",
+    "totalSamples": 126,
+    "evaluatedSamples": 60,
+    "seeds": 3,
+    "fonts": 21,
+    "openFonts": 15,
+    "proprietaryFonts": 6,
+    "choices": 4,
+    "chance": 0.25
+  },
+  "excludedModels": [
+    {
+      "id": "glm-5.2",
+      "display": "glm-5.2",
+      "config": "reasoning: max",
+      "vendor": "zhipu",
+      "reason": "No image input support through the Cursor SDK route (text-only); evaluation hung and was excluded."
+    }
+  ],
+  "models": [
+    {
+      "id": "gemini-3.1-pro",
+      "display": "gemini-3.1-pro",
+      "vendor": "google",
+      "config": "default",
+      "samples": 60,
+      "correct": 27,
+      "errors": 0,
+      "accuracy": 0.45,
+      "totalTokens": 1227585,
+      "reasoningTokens": 61557,
+      "avgTokensPerItem": 20460,
+      "totalDurationMs": 1547818,
+      "avgDurationMs": 25797,
+      "perRun": [
+        {
+          "seed": 1,
+          "correct": 10,
+          "total": 20,
+          "accuracy": 0.5
+        },
+        {
+          "seed": 2,
+          "correct": 11,
+          "total": 20,
+          "accuracy": 0.55
+        },
+        {
+          "seed": 3,
+          "correct": 6,
+          "total": 20,
+          "accuracy": 0.3
+        }
+      ],
+      "excluded": false
+    },
+    {
+      "id": "composer-2.5:fast",
+      "display": "composer-2.5",
+      "vendor": "cursor",
+      "config": "fast",
+      "samples": 60,
+      "correct": 24,
+      "errors": 0,
+      "accuracy": 0.4,
+      "totalTokens": 1095451,
+      "reasoningTokens": 0,
+      "avgTokensPerItem": 18258,
+      "totalDurationMs": 1711029,
+      "avgDurationMs": 28517,
+      "perRun": [
+        {
+          "seed": 1,
+          "correct": 6,
+          "total": 20,
+          "accuracy": 0.3
+        },
+        {
+          "seed": 2,
+          "correct": 8,
+          "total": 20,
+          "accuracy": 0.4
+        },
+        {
+          "seed": 3,
+          "correct": 10,
+          "total": 20,
+          "accuracy": 0.5
+        }
+      ],
+      "excluded": false
+    },
+    {
+      "id": "claude-opus-4-8",
+      "display": "claude-opus-4.8",
+      "vendor": "anthropic",
+      "config": "thinking, effort: xhigh",
+      "samples": 60,
+      "correct": 18,
+      "errors": 0,
+      "accuracy": 0.3,
+      "totalTokens": 2851238,
+      "reasoningTokens": 0,
+      "avgTokensPerItem": 47521,
+      "totalDurationMs": 228623,
+      "avgDurationMs": 3810,
+      "perRun": [
+        {
+          "seed": 1,
+          "correct": 5,
+          "total": 20,
+          "accuracy": 0.25
+        },
+        {
+          "seed": 2,
+          "correct": 8,
+          "total": 20,
+          "accuracy": 0.4
+        },
+        {
+          "seed": 3,
+          "correct": 5,
+          "total": 20,
+          "accuracy": 0.25
+        }
+      ],
+      "excluded": false
+    },
+    {
+      "id": "gpt-5.5",
+      "display": "gpt-5.5",
+      "vendor": "openai",
+      "config": "reasoning: extra-high",
+      "samples": 60,
+      "correct": 13,
+      "errors": 0,
+      "accuracy": 0.21666666666666667,
+      "totalTokens": 1694900,
+      "reasoningTokens": 29796,
+      "avgTokensPerItem": 28248,
+      "totalDurationMs": 1801414,
+      "avgDurationMs": 30024,
+      "perRun": [
+        {
+          "seed": 1,
+          "correct": 4,
+          "total": 20,
+          "accuracy": 0.2
+        },
+        {
+          "seed": 2,
+          "correct": 5,
+          "total": 20,
+          "accuracy": 0.25
+        },
+        {
+          "seed": 3,
+          "correct": 4,
+          "total": 20,
+          "accuracy": 0.2
+        }
+      ],
+      "excluded": false
+    }
+  ]
+}

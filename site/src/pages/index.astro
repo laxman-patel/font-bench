@@ -1,0 +1,101 @@
+---
+import "../styles/global.css";
+import Leaderboard from "../components/Leaderboard.tsx";
+import type { BenchmarkData } from "../components/Leaderboard.tsx";
+import data from "../data/benchmark-results.json";
+
+const bench = data as BenchmarkData;
+const generated = new Date(bench.generatedAt).toISOString().slice(0, 10);
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>fontbench</title>
+    <meta
+      name="description"
+      content="A benchmark measuring whether vision models can identify a typeface from a rendered image."
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&family=Space+Grotesk:wght@500;700&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <main class="shell">
+      <Leaderboard data={bench} client:load />
+
+      <article class="prose">
+        <p class="prose__kicker">Methodology · {generated}</p>
+        <h2>Reading the fine print of type</h2>
+        <p>
+          Most vision benchmarks reward semantic understanding: what the text says, what is in the
+          scene. fontbench asks the opposite question. Telling Helvetica from Arial means reading
+          terminal angles, aperture, the leg of an <code>R</code>, the tail of an <code>a</code>:
+          high-frequency detail that vision encoders are trained to throw away. Every label is
+          exact, because every image is rendered straight from a known font file.
+        </p>
+
+        <h3>The task</h3>
+        <p>
+          One rendered specimen, four candidate families, one answer. The model replies with a
+          single letter and a confidence as strict JSON, so random chance sits at
+          <code>{Math.round(bench.dataset.chance * 100)}%</code>. Distractors come from the same
+          category first (sans, serif, mono), so the choices stay plausible.
+        </p>
+
+        <h3>The data</h3>
+        <p>
+          {bench.dataset.fonts} families, {bench.dataset.openFonts} open and
+          {" "}{bench.dataset.proprietaryFonts} licensed (Arial, Helvetica Neue, Futura, Avenir
+          Next, Proxima Nova, Times New Roman). Each renders across three diagnostic strings and
+          two variants, for {bench.dataset.totalSamples} specimens. Images are anonymized PNGs with
+          no font name in the file, path, or metadata.
+        </p>
+
+        <h3>The harness</h3>
+        <p>
+          Inference runs through the <a href="https://cursor.com/docs/sdk/typescript">Cursor SDK</a>
+          {" "}inside an offline <a href="https://e2b.dev/docs">E2B</a> sandbox. The controller
+          uploads only the images and the questions, never the answer key or the fonts, then scores
+          the returned predictions locally. The model never sees a correct label, and proprietary
+          font files never leave the host.
+        </p>
+
+        <h3>This run</h3>
+        <p>
+          The board aggregates {bench.dataset.seeds} random draws of 20 items
+          ({bench.dataset.evaluatedSamples} per model). Every model saw the same items in each
+          draw. Token and latency figures come straight from the Cursor SDK run result.
+        </p>
+
+        <h3>What this is not</h3>
+        <ul>
+          <li>
+            <b>A stable ranking.</b> {bench.dataset.evaluatedSamples} items is an early signal;
+            per-seed accuracy swings by twenty points.
+          </li>
+          <li>
+            <b>A provider comparison.</b> Cursor mediates routing and image packaging, so this is a
+            Cursor SDK board, not raw OpenAI, Anthropic, or Google APIs.
+          </li>
+          <li>
+            <b>A dollar cost.</b> Spend is billed inside Cursor; tokens stand in as the proxy.
+          </li>
+        </ul>
+
+        <h3>Reproduce</h3>
+        <p>
+          Build the data with <code>bun run dataset:all</code>, then evaluate a model with
+          {" "}<code>bun run e2b:eval -- --model gemini-3.1-pro --limit 20</code>.
+        </p>
+      </article>
+
+      <p class="foot">fontbench {bench.version} · {generated}</p>
+    </main>
+  </body>
+</html>
