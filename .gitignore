@@ -23,3 +23,4 @@ dataset/private-mixed/
 # Astro site build artifacts.
 site/dist/
 site/.astro/
+.vercel/
