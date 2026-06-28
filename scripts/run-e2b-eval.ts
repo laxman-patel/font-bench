@@ -19,6 +19,7 @@ type RunOptions = {
   itemIds: string[];
   model: string;
   modelFast: boolean;
+  modelParams: { id: string; value: string }[];
   concurrency: number;
   retries: number;
   template?: string;
@@ -42,7 +43,7 @@ type ScoreReport = {
 };
 
 function usage(): string {
-  return `Usage: bun run e2b:eval -- [--dataset private-mixed] [--limit N] [--item sample_00000] [--model composer-2.5] [--model-fast] [--concurrency 4] [--retries 2] [--template TEMPLATE] [--keep-sandbox]
+  return `Usage: bun run e2b:eval -- [--dataset private-mixed] [--limit N] [--item sample_00000] [--model composer-2.5] [--model-fast] [--model-param id=value] [--concurrency 4] [--retries 2] [--template TEMPLATE] [--keep-sandbox]
 
 Requires:
 - E2B_API_KEY in the local environment
@@ -69,6 +70,7 @@ function parseArgs(): RunOptions {
     itemIds: [],
     model: process.env.CURSOR_MODEL ?? "composer-2.5",
     modelFast: process.env.CURSOR_MODEL_FAST === "true",
+    modelParams: parseModelParamsEnv(process.env.CURSOR_MODEL_PARAMS),
     concurrency: Number(process.env.FONT_BENCH_CONCURRENCY ?? "4"),
     retries: Number(process.env.FONT_BENCH_RETRIES ?? "2"),
     keepSandbox: false,
@@ -96,6 +98,8 @@ function parseArgs(): RunOptions {
       options.model = args[++index] ?? "";
     } else if (arg === "--model-fast" || arg === "--fast") {
       options.modelFast = true;
+    } else if (arg === "--model-param") {
+      options.modelParams.push(parseModelParam(args[++index] ?? ""));
     } else if (arg === "--concurrency") {
       const concurrency = Number(args[++index]);
       if (!Number.isInteger(concurrency) || concurrency <= 0) {
@@ -133,6 +137,24 @@ function parseArgs(): RunOptions {
   if (!process.env.E2B_API_KEY) throw new Error("E2B_API_KEY is required.");
   if (!process.env.CURSOR_API_KEY) throw new Error("CURSOR_API_KEY is required.");
   return options;
+}
+
+function parseModelParam(value: string): { id: string; value: string } {
+  const [id, ...rest] = value.split("=");
+  const paramValue = rest.join("=");
+  if (!id || !paramValue) {
+    throw new Error(`Invalid --model-param "${value}". Expected id=value.`);
+  }
+  return { id, value: paramValue };
+}
+
+function parseModelParamsEnv(value: string | undefined): { id: string; value: string }[] {
+  if (!value) return [];
+  return value
+    .split(",")
+    .map((entry) => entry.trim())
+    .filter(Boolean)
+    .map(parseModelParam);
 }
 
 function isInside(parent: string, child: string): boolean {
@@ -240,6 +262,9 @@ async function runSandboxInference(
 ): Promise<{ stdout: string; stderr: string }> {
   const limitArg = options.limit !== undefined ? ` --limit ${options.limit}` : "";
   const fastArg = options.modelFast ? " --model-fast" : "";
+  const modelParamArgs = options.modelParams
+    .map((param) => ` --model-param ${shellQuote(`${param.id}=${param.value}`)}`)
+    .join("");
   const concurrencyArg = ` --concurrency ${options.concurrency}`;
   const retriesArg = ` --retries ${options.retries}`;
   const command = [
@@ -248,7 +273,7 @@ async function runSandboxInference(
     "npm install --silent",
     `npx tsx e2b-infer.ts --items items.json --out predictions.jsonl --model ${shellQuote(
       options.model,
-    )}${fastArg}${limitArg}${concurrencyArg}${retriesArg}`,
+    )}${fastArg}${modelParamArgs}${limitArg}${concurrencyArg}${retriesArg}`,
   ].join(" && ");
 
   const result = await sandbox.commands.run(command, {
@@ -258,6 +283,9 @@ async function runSandboxInference(
       CURSOR_API_KEY: process.env.CURSOR_API_KEY!,
       CURSOR_MODEL: options.model,
       CURSOR_MODEL_FAST: options.modelFast ? "true" : "false",
+      CURSOR_MODEL_PARAMS: options.modelParams
+        .map((param) => `${param.id}=${param.value}`)
+        .join(","),
       FONT_BENCH_CONCURRENCY: String(options.concurrency),
       FONT_BENCH_RETRIES: String(options.retries),
     },
@@ -288,6 +316,7 @@ async function writeRunArtifacts(input: {
       {
         dataset: input.options.dataset,
         model: `${input.options.model}${input.options.modelFast ? ":fast" : ""}`,
+        model_params: input.options.modelParams,
         concurrency: input.options.concurrency,
         retries: input.options.retries,
         item_count: input.prepared.item_count,

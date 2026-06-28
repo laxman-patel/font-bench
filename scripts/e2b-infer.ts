@@ -21,6 +21,7 @@ type InferenceOptions = {
   outputPath: string;
   model: string;
   modelFast: boolean;
+  modelParams: { id: string; value: string }[];
   concurrency: number;
   retries: number;
   limit?: number;
@@ -35,12 +36,20 @@ type Prediction = {
   duration_ms?: number;
   model: string;
   attempts?: number;
+  usage?: {
+    inputTokens: number;
+    outputTokens: number;
+    cacheReadTokens: number;
+    cacheWriteTokens: number;
+    reasoningTokens?: number;
+    totalTokens?: number;
+  };
 };
 
 const CWD = dirname(fileURLToPath(import.meta.url));
 
 function usage(): string {
-  return `Usage: npx tsx e2b-infer.ts --items items.json --out predictions.jsonl [--model composer-2.5] [--model-fast] [--limit N] [--concurrency N] [--retries N]`;
+  return `Usage: npx tsx e2b-infer.ts --items items.json --out predictions.jsonl [--model composer-2.5] [--model-fast] [--model-param id=value] [--limit N] [--concurrency N] [--retries N]`;
 }
 
 function parseArgs(): InferenceOptions {
@@ -50,6 +59,7 @@ function parseArgs(): InferenceOptions {
     outputPath: resolve(CWD, "predictions.jsonl"),
     model: process.env.CURSOR_MODEL ?? "composer-2.5",
     modelFast: process.env.CURSOR_MODEL_FAST === "true",
+    modelParams: parseModelParamsEnv(process.env.CURSOR_MODEL_PARAMS),
     concurrency: Number(process.env.FONT_BENCH_CONCURRENCY ?? "4"),
     retries: Number(process.env.FONT_BENCH_RETRIES ?? "2"),
   };
@@ -67,6 +77,10 @@ function parseArgs(): InferenceOptions {
       options.model = args[++index] ?? "";
     } else if (arg === "--model-fast" || arg === "--fast") {
       options.modelFast = true;
+    } else if (arg === "--model-param") {
+      const param = parseModelParam(args[++index] ?? "");
+      options.modelParams ??= [];
+      options.modelParams.push(param);
     } else if (arg === "--concurrency") {
       const concurrency = Number(args[++index]);
       if (!Number.isInteger(concurrency) || concurrency <= 0) {
@@ -112,6 +126,24 @@ function parseArgs(): InferenceOptions {
   }
 
   return options as InferenceOptions;
+}
+
+function parseModelParam(value: string): { id: string; value: string } {
+  const [id, ...rest] = value.split("=");
+  const paramValue = rest.join("=");
+  if (!id || !paramValue) {
+    throw new Error(`Invalid --model-param "${value}". Expected id=value.`);
+  }
+  return { id, value: paramValue };
+}
+
+function parseModelParamsEnv(value: string | undefined): { id: string; value: string }[] {
+  if (!value) return [];
+  return value
+    .split(",")
+    .map((entry) => entry.trim())
+    .filter(Boolean)
+    .map(parseModelParam);
 }
 
 async function readJson<T>(path: string): Promise<T> {
@@ -177,8 +209,11 @@ async function disposeAgent(agent: unknown): Promise<void> {
 }
 
 function modelSelection(options: InferenceOptions): { id: string; params?: { id: string; value: string }[] } {
-  if (!options.modelFast) return { id: options.model };
-  return { id: options.model, params: [{ id: "fast", value: "true" }] };
+  const params = [...options.modelParams];
+  if (options.modelFast && !params.some((param) => param.id === "fast")) {
+    params.push({ id: "fast", value: "true" });
+  }
+  return params.length > 0 ? { id: options.model, params } : { id: options.model };
 }
 
 async function inferItem(item: DatasetItem, options: InferenceOptions): Promise<Prediction> {
@@ -213,6 +248,16 @@ async function inferItem(item: DatasetItem, options: InferenceOptions): Promise<
       confidence: parsed.confidence,
       duration_ms: result.durationMs ?? Date.now() - startedAt,
       model: `${result.model?.id ?? options.model}${options.modelFast ? ":fast" : ""}`,
+      usage: result.usage
+        ? {
+            ...result.usage,
+            totalTokens:
+              result.usage.inputTokens +
+              result.usage.outputTokens +
+              result.usage.cacheReadTokens +
+              result.usage.cacheWriteTokens,
+          }
+        : undefined,
       error: result.status === "finished" ? undefined : `run status: ${result.status}`,
     };
   } catch (error) {

@@ -32,6 +32,14 @@ type Prediction = {
   error?: string;
   duration_ms?: number;
   model?: string;
+  usage?: {
+    inputTokens?: number;
+    outputTokens?: number;
+    cacheReadTokens?: number;
+    cacheWriteTokens?: number;
+    reasoningTokens?: number;
+    totalTokens?: number;
+  };
 };
 
 type ScoredPrediction = Prediction & {
@@ -51,6 +59,19 @@ type ScoreReport = {
   errors: number;
   missing_predictions: string[];
   accuracy: number;
+  timing: {
+    totalDurationMs: number;
+    averageDurationMs: number;
+  };
+  usage: {
+    reportedCount: number;
+    inputTokens: number;
+    outputTokens: number;
+    cacheReadTokens: number;
+    cacheWriteTokens: number;
+    reasoningTokens: number;
+    totalTokens: number;
+  };
   scored: ScoredPrediction[];
 };
 
@@ -203,6 +224,34 @@ async function scorePredictions(options: ScoreOptions): Promise<ScoreReport> {
   const errors = scored.filter((entry) => Boolean(entry.error || entry.parse_error)).length;
   const correct = scored.filter((entry) => entry.correct).length;
   const incorrect = scored.length - correct;
+  const totalDurationMs = scored.reduce((sum, entry) => sum + (entry.duration_ms ?? 0), 0);
+  const usage = scored.reduce(
+    (acc, entry) => {
+      if (!entry.usage) return acc;
+      acc.reportedCount += 1;
+      acc.inputTokens += entry.usage.inputTokens ?? 0;
+      acc.outputTokens += entry.usage.outputTokens ?? 0;
+      acc.cacheReadTokens += entry.usage.cacheReadTokens ?? 0;
+      acc.cacheWriteTokens += entry.usage.cacheWriteTokens ?? 0;
+      acc.reasoningTokens += entry.usage.reasoningTokens ?? 0;
+      acc.totalTokens +=
+        entry.usage.totalTokens ??
+        (entry.usage.inputTokens ?? 0) +
+          (entry.usage.outputTokens ?? 0) +
+          (entry.usage.cacheReadTokens ?? 0) +
+          (entry.usage.cacheWriteTokens ?? 0);
+      return acc;
+    },
+    {
+      reportedCount: 0,
+      inputTokens: 0,
+      outputTokens: 0,
+      cacheReadTokens: 0,
+      cacheWriteTokens: 0,
+      reasoningTokens: 0,
+      totalTokens: 0,
+    },
+  );
 
   return {
     dataset: options.dataset,
@@ -214,6 +263,11 @@ async function scorePredictions(options: ScoreOptions): Promise<ScoreReport> {
     errors,
     missing_predictions: missingPredictions,
     accuracy: scored.length > 0 ? correct / scored.length : 0,
+    timing: {
+      totalDurationMs,
+      averageDurationMs: scored.length > 0 ? totalDurationMs / scored.length : 0,
+    },
+    usage,
     scored,
   };
 }
