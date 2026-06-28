@@ -18,6 +18,9 @@ type RunOptions = {
   limit?: number;
   itemIds: string[];
   model: string;
+  modelFast: boolean;
+  concurrency: number;
+  retries: number;
   template?: string;
   keepSandbox: boolean;
   commandTimeoutMs: number;
@@ -39,7 +42,7 @@ type ScoreReport = {
 };
 
 function usage(): string {
-  return `Usage: bun run e2b:eval -- [--dataset private-mixed] [--limit N] [--item sample_00000] [--model composer-2.5] [--template TEMPLATE] [--keep-sandbox]
+  return `Usage: bun run e2b:eval -- [--dataset private-mixed] [--limit N] [--item sample_00000] [--model composer-2.5] [--model-fast] [--concurrency 4] [--retries 2] [--template TEMPLATE] [--keep-sandbox]
 
 Requires:
 - E2B_API_KEY in the local environment
@@ -65,6 +68,9 @@ function parseArgs(): RunOptions {
     dataset: defaultDataset(),
     itemIds: [],
     model: process.env.CURSOR_MODEL ?? "composer-2.5",
+    modelFast: process.env.CURSOR_MODEL_FAST === "true",
+    concurrency: Number(process.env.FONT_BENCH_CONCURRENCY ?? "4"),
+    retries: Number(process.env.FONT_BENCH_RETRIES ?? "2"),
     keepSandbox: false,
     commandTimeoutMs: 20 * 60 * 1000,
   };
@@ -88,6 +94,20 @@ function parseArgs(): RunOptions {
       options.itemIds.push(itemId);
     } else if (arg === "--model") {
       options.model = args[++index] ?? "";
+    } else if (arg === "--model-fast" || arg === "--fast") {
+      options.modelFast = true;
+    } else if (arg === "--concurrency") {
+      const concurrency = Number(args[++index]);
+      if (!Number.isInteger(concurrency) || concurrency <= 0) {
+        throw new Error("--concurrency must be a positive integer");
+      }
+      options.concurrency = concurrency;
+    } else if (arg === "--retries") {
+      const retries = Number(args[++index]);
+      if (!Number.isInteger(retries) || retries < 0) {
+        throw new Error("--retries must be a non-negative integer");
+      }
+      options.retries = retries;
     } else if (arg === "--template") {
       options.template = args[++index] ?? "";
     } else if (arg === "--keep-sandbox") {
@@ -104,6 +124,12 @@ function parseArgs(): RunOptions {
   }
 
   if (!options.model) throw new Error("--model cannot be empty");
+  if (!Number.isInteger(options.concurrency) || options.concurrency <= 0) {
+    throw new Error("--concurrency must be a positive integer");
+  }
+  if (!Number.isInteger(options.retries) || options.retries < 0) {
+    throw new Error("--retries must be a non-negative integer");
+  }
   if (!process.env.E2B_API_KEY) throw new Error("E2B_API_KEY is required.");
   if (!process.env.CURSOR_API_KEY) throw new Error("CURSOR_API_KEY is required.");
   return options;
@@ -213,13 +239,16 @@ async function runSandboxInference(
   options: RunOptions,
 ): Promise<{ stdout: string; stderr: string }> {
   const limitArg = options.limit !== undefined ? ` --limit ${options.limit}` : "";
+  const fastArg = options.modelFast ? " --model-fast" : "";
+  const concurrencyArg = ` --concurrency ${options.concurrency}`;
+  const retriesArg = ` --retries ${options.retries}`;
   const command = [
     "set -euo pipefail",
     "node --version",
     "npm install --silent",
     `npx tsx e2b-infer.ts --items items.json --out predictions.jsonl --model ${shellQuote(
       options.model,
-    )}${limitArg}`,
+    )}${fastArg}${limitArg}${concurrencyArg}${retriesArg}`,
   ].join(" && ");
 
   const result = await sandbox.commands.run(command, {
@@ -228,6 +257,9 @@ async function runSandboxInference(
     envs: {
       CURSOR_API_KEY: process.env.CURSOR_API_KEY!,
       CURSOR_MODEL: options.model,
+      CURSOR_MODEL_FAST: options.modelFast ? "true" : "false",
+      FONT_BENCH_CONCURRENCY: String(options.concurrency),
+      FONT_BENCH_RETRIES: String(options.retries),
     },
   });
 
@@ -255,7 +287,9 @@ async function writeRunArtifacts(input: {
     `${JSON.stringify(
       {
         dataset: input.options.dataset,
-        model: input.options.model,
+        model: `${input.options.model}${input.options.modelFast ? ":fast" : ""}`,
+        concurrency: input.options.concurrency,
+        retries: input.options.retries,
         item_count: input.prepared.item_count,
         prepared_workspace: input.prepared.workspace,
       },
@@ -327,6 +361,7 @@ async function main(): Promise<void> {
           predictions_path: artifacts.predictionsPath,
           score_path: artifacts.scorePath,
           dataset: score.dataset,
+          model: `${options.model}${options.modelFast ? ":fast" : ""}`,
           prediction_count: score.prediction_count,
           correct: score.correct,
           incorrect: score.incorrect,
