@@ -12,3 +12,6 @@ dataset/dev-open/
 # User-provided proprietary assets must never be committed.
 corpus/private/
 dataset/private-mixed/
+
+# Local web research scratch files.
+.firecrawl/
