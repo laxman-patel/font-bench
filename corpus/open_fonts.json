@@ -1,0 +1,113 @@
+{
+  "version": 1,
+  "source": "Google Fonts CSS2",
+  "weight": 400,
+  "style": "normal",
+  "fonts": [
+    {
+      "id": "inter-regular",
+      "family": "Inter",
+      "category": "sans",
+      "cluster": "neo-grotesque-sans",
+      "license": "open-google-fonts"
+    },
+    {
+      "id": "roboto-regular",
+      "family": "Roboto",
+      "category": "sans",
+      "cluster": "neo-grotesque-sans",
+      "license": "open-google-fonts"
+    },
+    {
+      "id": "open-sans-regular",
+      "family": "Open Sans",
+      "category": "sans",
+      "cluster": "humanist-sans",
+      "license": "open-google-fonts"
+    },
+    {
+      "id": "lato-regular",
+      "family": "Lato",
+      "category": "sans",
+      "cluster": "humanist-sans",
+      "license": "open-google-fonts"
+    },
+    {
+      "id": "source-sans-3-regular",
+      "family": "Source Sans 3",
+      "category": "sans",
+      "cluster": "humanist-sans",
+      "license": "open-google-fonts"
+    },
+    {
+      "id": "noto-sans-regular",
+      "family": "Noto Sans",
+      "category": "sans",
+      "cluster": "global-sans",
+      "license": "open-google-fonts"
+    },
+    {
+      "id": "montserrat-regular",
+      "family": "Montserrat",
+      "category": "sans",
+      "cluster": "geometric-sans",
+      "license": "open-google-fonts"
+    },
+    {
+      "id": "poppins-regular",
+      "family": "Poppins",
+      "category": "sans",
+      "cluster": "geometric-sans",
+      "license": "open-google-fonts"
+    },
+    {
+      "id": "merriweather-regular",
+      "family": "Merriweather",
+      "category": "serif",
+      "cluster": "screen-serif",
+      "license": "open-google-fonts"
+    },
+    {
+      "id": "lora-regular",
+      "family": "Lora",
+      "category": "serif",
+      "cluster": "text-serif",
+      "license": "open-google-fonts"
+    },
+    {
+      "id": "libre-baskerville-regular",
+      "family": "Libre Baskerville",
+      "category": "serif",
+      "cluster": "transitional-serif",
+      "license": "open-google-fonts"
+    },
+    {
+      "id": "eb-garamond-regular",
+      "family": "EB Garamond",
+      "category": "serif",
+      "cluster": "garalde-serif",
+      "license": "open-google-fonts"
+    },
+    {
+      "id": "playfair-display-regular",
+      "family": "Playfair Display",
+      "category": "serif",
+      "cluster": "display-serif",
+      "license": "open-google-fonts"
+    },
+    {
+      "id": "jetbrains-mono-regular",
+      "family": "JetBrains Mono",
+      "category": "mono",
+      "cluster": "programming-mono",
+      "license": "open-google-fonts"
+    },
+    {
+      "id": "fira-code-regular",
+      "family": "Fira Code",
+      "category": "mono",
+      "cluster": "programming-mono",
+      "license": "open-google-fonts"
+    }
+  ]
+}

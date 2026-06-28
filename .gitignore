@@ -1,0 +1,14 @@
+.reference/
+.venv/
+node_modules/
+__pycache__/
+*.pyc
+
+# Reproducible generated assets.
+corpus/open/
+corpus/manifest.generated.json
+dataset/dev-open/
+
+# User-provided proprietary assets must never be committed.
+corpus/private/
+dataset/private-mixed/

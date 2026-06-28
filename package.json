@@ -1,0 +1,25 @@
+{
+  "name": "font-bench",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dataset": "bun run scripts/build-open-dataset.ts",
+    "dataset:download": "bun run scripts/build-open-dataset.ts download",
+    "dataset:render": "bun run scripts/build-open-dataset.ts render",
+    "dataset:validate": "bun run scripts/build-open-dataset.ts validate",
+    "dataset:private": "bun run scripts/build-open-dataset.ts private",
+    "dataset:all": "bun run scripts/build-open-dataset.ts all",
+    "inference:prepare": "bun run scripts/prepare-inference-workspace.ts",
+    "inference:prepare:private": "bun run scripts/prepare-inference-workspace.ts --dataset private-mixed",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "fontkit": "^2.0.4",
+    "sharp": "^0.34.5"
+  },
+  "devDependencies": {
+    "@types/bun": "^1.3.4",
+    "typescript": "^5.9.3"
+  }
+}
