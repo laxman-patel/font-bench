@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-import { Agent } from "@cursor/sdk";
+import { Agent, JsonlLocalAgentStore } from "@cursor/sdk";
 import { readFile, writeFile } from "node:fs/promises";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -153,8 +153,8 @@ async function inferItem(item: DatasetItem, model: string): Promise<Prediction> 
       model: { id: model },
       local: {
         cwd: CWD,
+        store: new JsonlLocalAgentStore(resolve(CWD, ".cursor-sdk-store")),
         settingSources: [],
-        sandboxOptions: { enabled: true },
       },
     });
 
