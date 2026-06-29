@@ -117,7 +117,7 @@ export default function Leaderboard({ data }: { data: BenchmarkData }) {
     return copy;
   }, [data.models, metric]);
 
-  const maxValue = Math.max(...data.models.map(metric.value), 1e-6);
+  const trackMax = tab === "accuracy" ? 1 : Math.max(...data.models.map(metric.value), 1e-6);
 
   return (
     <>
@@ -152,7 +152,8 @@ export default function Leaderboard({ data }: { data: BenchmarkData }) {
 
         {ranked.map((model, index) => {
           const lead = index === 0;
-          const width = `${Math.max((metric.value(model) / maxValue) * 100, 3)}%`;
+          const rawWidth = Math.min((metric.value(model) / trackMax) * 100, 100);
+          const width = `${tab === "accuracy" ? rawWidth : Math.max(rawWidth, 3)}%`;
           return (
             <div className={`row${lead ? " lead" : ""}`} key={model.id}>
               <span className="row__rank">{index + 1}</span>
