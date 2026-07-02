@@ -30,63 +30,101 @@ const generated = new Date(bench.generatedAt).toISOString().slice(0, 10);
       <Leaderboard data={bench} client:load />
 
       <article class="prose">
-        <p class="prose__kicker">Methodology · {generated}</p>
-        <h2>Reading the fine print of type</h2>
+        <p class="prose__kicker">the story · {generated}</p>
+        <h2>I made four frontier models squint at fonts</h2>
         <p>
-          Most vision benchmarks reward semantic understanding: what the text says, what is in the
-          scene. fontbench asks the opposite question. Telling Helvetica from Arial means reading
-          terminal angles, aperture, the leg of an <code>R</code>, the tail of an <code>a</code>:
-          high-frequency detail that vision encoders are trained to throw away. Every label is
-          exact, because every image is rendered straight from a known font file.
+          It started with a dumb question. On a good day I can tell Helvetica from Arial — you look
+          at the leg of the <code>R</code>, the tail of the <code>a</code>, how the terminals are
+          cut. Tiny stuff. And I kept wondering: can a frontier vision model do that? Not
+          <em>read</em> the text, every model can read text now. I mean actually see the
+          letterforms. So I rendered specimens straight from real font files, stripped the names
+          out of everything, and asked.
         </p>
 
         <h3>The task</h3>
         <p>
-          One rendered specimen, four candidate families, one answer. The model replies with a
-          single letter and a confidence as strict JSON, so random chance sits at
-          <code>{Math.round(bench.dataset.chance * 100)}%</code>. Distractors come from the same
-          category first (sans, serif, mono), so the choices stay plausible.
+          One rendered image, four candidate families, pick one. The model answers with a single
+          letter and a confidence as strict JSON, so random guessing gets you
+          <code>{Math.round(bench.dataset.chance * 100)}%</code>. The wrong options come from the
+          same category (sans with sans, mono with mono) so theres no freebies.
+          {" "}{bench.dataset.fonts} families, {bench.dataset.totalSamples} specimens, and every
+          label is exact because I rendered every image myself from the actual font file.
         </p>
 
-        <h3>The data</h3>
+        <h3>How do you even tell fonts apart?</h3>
         <p>
-          {bench.dataset.fonts} families, {bench.dataset.openFonts} open and
-          {" "}{bench.dataset.proprietaryFonts} licensed (Arial, Helvetica Neue, Futura, Avenir
-          Next, Proxima Nova, Times New Roman). Each renders across three diagnostic strings and
-          two variants, for {bench.dataset.totalSamples} specimens. Images are anonymized PNGs with
-          no font name in the file, path, or metadata.
+          The same way a birder tells sparrows apart: stop looking at the bird, start looking at
+          details. Roughly, every guess loops through something like this —
         </p>
 
-        <h3>The harness</h3>
+        <figure class="squint">
+          <div class="squint__stage" aria-hidden="true">
+            <span class="squint__glyph">Rag</span>
+            <span class="squint__ring squint__ring--a"></span>
+            <span class="squint__ring squint__ring--r"></span>
+            <span class="squint__ring squint__ring--g"></span>
+          </div>
+          <ol class="squint__thoughts">
+            <li class="squint__thought squint__thought--1">
+              double-story <code>a</code>… so not a geometric sans
+            </li>
+            <li class="squint__thought squint__thought--2">
+              straight leg on the <code>R</code>, flat-cut terminals
+            </li>
+            <li class="squint__thought squint__thought--3">
+              squarish curves, tight aperture on the <code>g</code>
+            </li>
+            <li class="squint__thought squint__verdict">→ Space Grotesk. confidence 0.83</li>
+          </ol>
+          <figcaption>
+            this specimen happens to be the site's own display font. and yes, that one it got
+            right.
+          </figcaption>
+        </figure>
+
         <p>
-          Inference runs through the <a href="https://cursor.com/docs/sdk/typescript">Cursor SDK</a>
-          {" "}inside an offline <a href="https://e2b.dev/docs">E2B</a> sandbox. The controller
-          uploads only the images and the questions, never the answer key or the fonts, then scores
-          the returned predictions locally. The model never sees a correct label, and proprietary
-          font files never leave the host.
+          Here's the catch: vision encoders are trained to do the exact opposite. They compress an
+          image down to "some text on a background" and throw the high-frequency detail away — and
+          that detail is literally the whole game here. Which is what makes this fun to test.
         </p>
 
-        <h3>This run</h3>
+        <h3>Why the Cursor SDK (the money part)</h3>
         <p>
-          The board aggregates {bench.dataset.seeds} random draws of 20 items
-          ({bench.dataset.evaluatedSamples} per model). Every model saw the same items in each
-          draw. Token and latency figures come straight from the Cursor SDK run result.
+          Honest answer: the main reason every model runs through the
+          {" "}<a href="https://cursor.com/docs/sdk/typescript">Cursor SDK</a> instead of a
+          stricter purpose-built harness is that I dont have API money. Vision calls are priced
+          per image, and a serious benchmark run costs real dollars that I, a person with a Cursor
+          subscription and not much else, do not have. So the SDK <em>is</em> the harness, running
+          inside an offline <a href="https://e2b.dev/docs">E2B</a> sandbox. The sandbox gets the
+          images and the questions, never the answer key, and the licensed font files never leave
+          my machine.
+        </p>
+        <p>
+          This has consequences. Cursor sits between me and the models, it handles the routing and
+          how images get packaged. So read the board as a <b>Cursor SDK leaderboard</b>, not a
+          clean comparison of raw OpenAI vs Anthropic vs Google endpoints. And since billing
+          happens inside my subscription there's no dollar column — tokens are the closest honest
+          proxy.
         </p>
 
-        <h3>What this is not</h3>
-        <ul>
-          <li>
-            <b>A stable ranking.</b> {bench.dataset.evaluatedSamples} items is an early signal;
-            per-seed accuracy swings by twenty points.
-          </li>
-          <li>
-            <b>A provider comparison.</b> Cursor mediates routing and image packaging, so this is a
-            Cursor SDK board, not raw OpenAI, Anthropic, or Google APIs.
-          </li>
-          <li>
-            <b>A dollar cost.</b> Spend is billed inside Cursor; tokens stand in as the proxy.
-          </li>
-        </ul>
+        <h3>About that sample size</h3>
+        <p>
+          Each model saw {bench.dataset.evaluatedSamples} items: {bench.dataset.seeds} random
+          draws of 20, same items for everyone. That's it. Again — cost. With n=60 a model scoring
+          45% carries a margin of error around ±12 points, and per-seed accuracy already swings by
+          twenty. So dont read the board as "gemini beats composer", the gaps between neighbours
+          are mostly noise. The gap between the whole pack and the 25% chance line — that one is
+          real.
+        </p>
+
+        <h3>So what is this, actually</h3>
+        <p>
+          Not a ranking. More like an existence proof. The question fontbench actually answers is:
+          did any of the fine glyph detail survive the vision encoder at all? Right now the answer
+          is "barely". The best model gets 45% — meaningfully above chance, nowhere near a type
+          nerd. Which I find genuinely funny: these models can describe a photo of your fridge in
+          loving detail, but mostly cant tell you what font the magnets are set in.
+        </p>
 
         <h3>Reproduce</h3>
         <p>

@@ -239,6 +239,157 @@ body {
   border-color: var(--accent);
 }
 
+/* squint figure */
+.squint {
+  margin: 28px 0 12px;
+  padding: 24px 24px 20px;
+  border: 1px solid var(--line-soft);
+  border-radius: 12px;
+}
+
+.squint__stage {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  padding: 16px 0 30px;
+}
+
+.squint__glyph {
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: 96px;
+  line-height: 1;
+  letter-spacing: 0.01em;
+  user-select: none;
+}
+
+.squint__ring {
+  position: absolute;
+  width: 48px;
+  height: 48px;
+  border: 1.5px solid var(--accent);
+  border-radius: 50%;
+  opacity: 0;
+  transform: scale(0.5);
+  animation: squint-ring 12s infinite;
+}
+.squint__ring--a {
+  left: calc(50% - 24px);
+  top: 41px;
+  animation-delay: 0s;
+}
+.squint__ring--r {
+  left: calc(50% - 62px);
+  top: 54px;
+  animation-delay: 3s;
+}
+.squint__ring--g {
+  left: calc(50% + 34px);
+  top: 61px;
+  animation-delay: 6s;
+}
+
+@keyframes squint-ring {
+  0%,
+  2% {
+    opacity: 0;
+    transform: scale(0.5);
+  }
+  5%,
+  20% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  25%,
+  100% {
+    opacity: 0;
+    transform: scale(0.5);
+  }
+}
+
+.squint__thoughts {
+  margin: 0;
+  padding-left: 22px;
+}
+.squint__thought {
+  font-family: var(--mono);
+  font-size: 13px;
+  line-height: 1.9;
+  color: var(--faint);
+  animation: squint-thought 12s infinite;
+}
+.squint__thought code {
+  font-size: 12.5px;
+  color: inherit;
+}
+.squint__thought--1 {
+  animation-delay: 0s;
+}
+.squint__thought--2 {
+  animation-delay: 3s;
+}
+.squint__thought--3 {
+  animation-delay: 6s;
+}
+.squint__verdict {
+  list-style: none;
+  animation-name: squint-verdict;
+  animation-delay: 9s;
+}
+
+@keyframes squint-thought {
+  0%,
+  2% {
+    color: var(--faint);
+  }
+  5%,
+  22% {
+    color: var(--fg);
+  }
+  27%,
+  100% {
+    color: var(--faint);
+  }
+}
+
+@keyframes squint-verdict {
+  0%,
+  2% {
+    color: var(--faint);
+  }
+  5%,
+  24% {
+    color: var(--accent);
+  }
+  29%,
+  100% {
+    color: var(--faint);
+  }
+}
+
+.squint figcaption {
+  margin-top: 16px;
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  color: var(--faint);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .squint__ring {
+    animation: none;
+    opacity: 0.45;
+    transform: none;
+  }
+  .squint__thought {
+    animation: none;
+    color: var(--fg);
+  }
+  .squint__verdict {
+    color: var(--accent);
+  }
+}
+
 .foot {
   margin-top: 72px;
   font-family: var(--mono);
