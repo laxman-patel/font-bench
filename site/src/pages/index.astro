@@ -31,14 +31,21 @@ const generated = new Date(bench.generatedAt).toISOString().slice(0, 10);
 
       <article class="prose">
         <p class="prose__kicker">the story · {generated}</p>
-        <h2>I made four frontier models squint at fonts</h2>
+        <h2>Models keep ruining my designs, so I built a benchmark</h2>
         <p>
-          It started with a dumb question. On a good day I can tell Helvetica from Arial — you look
-          at the leg of the <code>R</code>, the tail of the <code>a</code>, how the terminals are
-          cut. Tiny stuff. And I kept wondering: can a frontier vision model do that? Not
-          <em>read</em> the text, every model can read text now. I mean actually see the
-          letterforms. So I rendered specimens straight from real font files, stripped the names
-          out of everything, and asked.
+          Here's how I design UIs: badly, with help. I scour the internet for reference material —
+          dribbble, real sites, screenshots hoarded in a folder — and when something clicks I
+          paste the image into my coding agent and say "make it look like this". Sometimes the
+          result is scary good. And sometimes it's… off. Almost always, the thing that's off is
+          the font. The model looks at a screenshot set in Futura, confidently declares it
+          Montserrat, and the whole design just dies right there. Wrong font, wrong vibe, wrong
+          everything.
+        </p>
+        <p>
+          That happened enough times that I wanted a number for it. fontbench is that number. It's
+          a proxy for one very specific workflow — <em>can this model actually see the typeface in
+          my reference image, or is it guessing</em> — and if it accidentally measures something
+          deeper about fine-grained vision, great, I'll take the second-order effects too.
         </p>
 
         <h3>The task</h3>
@@ -88,6 +95,24 @@ const generated = new Date(bench.generatedAt).toISOString().slice(0, 10);
           that detail is literally the whole game here. Which is what makes this fun to test.
         </p>
 
+        <h3>Two datasets, one public, one not</h3>
+        <p>
+          There's <code>dev-open</code>: {bench.dataset.openFonts} families pulled from Google
+          Fonts, fully reproducible, anyone can rebuild it from the repo with one command. And
+          then there's <code>private-mixed</code> — the one the leaderboard actually runs on —
+          which adds {bench.dataset.proprietaryFonts} licensed families I own: Arial, Helvetica
+          Neue, Futura, Avenir Next, Proxima Nova, Times New Roman.
+        </p>
+        <p>
+          Why bother with the private half? Two reasons. First, these are the fonts that actually
+          show up in the reference images I steal from. A benchmark of only free Google Fonts
+          would be testing a world I dont design in. Second — contamination. Every specimen here
+          is rendered fresh from the font file on my machine and has never been published
+          anywhere, so no model has seen these exact pixels in training. The private font files
+          themselves stay gitignored and never leave my machine; the sandbox only ever sees
+          anonymous PNGs.
+        </p>
+
         <h3>Why the Cursor SDK (the money part)</h3>
         <p>
           Honest answer: the main reason every model runs through the
@@ -120,10 +145,11 @@ const generated = new Date(bench.generatedAt).toISOString().slice(0, 10);
         <h3>So what is this, actually</h3>
         <p>
           Not a ranking. More like an existence proof. The question fontbench actually answers is:
-          did any of the fine glyph detail survive the vision encoder at all? Right now the answer
-          is "barely". The best model gets 45% — meaningfully above chance, nowhere near a type
-          nerd. Which I find genuinely funny: these models can describe a photo of your fridge in
-          loving detail, but mostly cant tell you what font the magnets are set in.
+          when I paste a reference into an agent, did any of the glyph detail survive the vision
+          encoder at all? Right now the answer is "barely". The best model gets 45% — meaningfully
+          above chance, nowhere near a type nerd, and this is the <em>easy</em> version with
+          multiple choice. In my real workflow theres no four options, the model has to name the
+          font cold. No wonder my designs kept coming back in the wrong typeface.
         </p>
 
         <h3>Reproduce</h3>
