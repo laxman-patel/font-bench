@@ -33,8 +33,8 @@ const generated = new Date(bench.generatedAt).toISOString().slice(0, 10);
         <p class="prose__kicker">the story · {generated}</p>
         <h2>Models keep ruining my designs, so I built a benchmark</h2>
         <p>
-          Here's how I design UIs: badly, with help. I scour the internet for reference material —
-          dribbble, real sites, screenshots hoarded in a folder — and when something clicks I
+          Here's how I design UIs: badly, with help. I scour the internet for reference material,
+          dribbble, real sites, screenshots hoarded in a folder, and when something clicks I
           paste the image into my coding agent and say "make it look like this". Sometimes the
           result is scary good. And sometimes it's… off. Almost always, the thing that's off is
           the font. The model looks at a screenshot set in Futura, confidently declares it
@@ -43,8 +43,8 @@ const generated = new Date(bench.generatedAt).toISOString().slice(0, 10);
         </p>
         <p>
           That happened enough times that I wanted a number for it. fontbench is that number. It's
-          a proxy for one very specific workflow — <em>can this model actually see the typeface in
-          my reference image, or is it guessing</em> — and if it accidentally measures something
+          a proxy for one very specific workflow: <em>can this model actually see the typeface in
+          my reference image, or is it guessing</em>, and if it accidentally measures something
           deeper about fine-grained vision, great, I'll take the second-order effects too.
         </p>
 
@@ -61,7 +61,7 @@ const generated = new Date(bench.generatedAt).toISOString().slice(0, 10);
         <h3>How do you even tell fonts apart?</h3>
         <p>
           The same way a birder tells sparrows apart: stop looking at the bird, start looking at
-          details. Roughly, every guess loops through something like this —
+          details. Roughly, every guess loops through something like this:
         </p>
 
         <figure class="squint">
@@ -91,7 +91,7 @@ const generated = new Date(bench.generatedAt).toISOString().slice(0, 10);
 
         <p>
           Here's the catch: vision encoders are trained to do the exact opposite. They compress an
-          image down to "some text on a background" and throw the high-frequency detail away — and
+          image down to "some text on a background" and throw the high-frequency detail away, and
           that detail is literally the whole game here. Which is what makes this fun to test.
         </p>
 
@@ -99,14 +99,14 @@ const generated = new Date(bench.generatedAt).toISOString().slice(0, 10);
         <p>
           There's <code>dev-open</code>: {bench.dataset.openFonts} families pulled from Google
           Fonts, fully reproducible, anyone can rebuild it from the repo with one command. And
-          then there's <code>private-mixed</code> — the one the leaderboard actually runs on —
+          then there's <code>private-mixed</code>, the one the leaderboard actually runs on,
           which adds {bench.dataset.proprietaryFonts} licensed families I own: Arial, Helvetica
           Neue, Futura, Avenir Next, Proxima Nova, Times New Roman.
         </p>
         <p>
           Why bother with the private half? Two reasons. First, these are the fonts that actually
           show up in the reference images I steal from. A benchmark of only free Google Fonts
-          would be testing a world I dont design in. Second — contamination. Every specimen here
+          would be testing a world I dont design in. Second, contamination. Every specimen here
           is rendered fresh from the font file on my machine and has never been published
           anywhere, so no model has seen these exact pixels in training. The private font files
           themselves stay gitignored and never leave my machine; the sandbox only ever sees
@@ -128,17 +128,17 @@ const generated = new Date(bench.generatedAt).toISOString().slice(0, 10);
           This has consequences. Cursor sits between me and the models, it handles the routing and
           how images get packaged. So read the board as a <b>Cursor SDK leaderboard</b>, not a
           clean comparison of raw OpenAI vs Anthropic vs Google endpoints. And since billing
-          happens inside my subscription there's no dollar column — tokens are the closest honest
+          happens inside my subscription there's no dollar column. Tokens are the closest honest
           proxy.
         </p>
 
         <h3>About that sample size</h3>
         <p>
           Each model saw {bench.dataset.evaluatedSamples} items: {bench.dataset.seeds} random
-          draws of 20, same items for everyone. That's it. Again — cost. With n=60 a model scoring
+          draws of 20, same items for everyone. That's it. Again, cost. With n=60 a model scoring
           45% carries a margin of error around ±12 points, and per-seed accuracy already swings by
           twenty. So dont read the board as "gemini beats composer", the gaps between neighbours
-          are mostly noise. The gap between the whole pack and the 25% chance line — that one is
+          are mostly noise. The gap between the whole pack and the 25% chance line. That one is
           real.
         </p>
 
@@ -146,7 +146,7 @@ const generated = new Date(bench.generatedAt).toISOString().slice(0, 10);
         <p>
           Not a ranking. More like an existence proof. The question fontbench actually answers is:
           when I paste a reference into an agent, did any of the glyph detail survive the vision
-          encoder at all? Right now the answer is "barely". The best model gets 45% — meaningfully
+          encoder at all? Right now the answer is "barely". The best model gets 45%, meaningfully
           above chance, nowhere near a type nerd, and this is the <em>easy</em> version with
           multiple choice. In my real workflow theres no four options, the model has to name the
           font cold. No wonder my designs kept coming back in the wrong typeface.
